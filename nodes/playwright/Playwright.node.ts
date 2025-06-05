@@ -69,7 +69,13 @@ export class Playwright implements INodeType {
                     name: 'Take Screenshot',
                     value: 'takeScreenshot',
                     description: 'Take a screenshot of a webpage',
-																				action: 'Take a screenshot of a webpage',
+                    action: 'Take a screenshot of a webpage',
+                },
+                {
+                    name: 'Run Playwright Script',
+                    value: 'runPlaywrightScript',
+                    description: 'Run a custom Playwright script pasted in the node',
+                    action: 'Run a custom Playwright script',
                 }
             ],
             default: 'navigate',
@@ -84,12 +90,29 @@ export class Playwright implements INodeType {
             description: 'The URL to navigate to',
             displayOptions: {
                 show: {
-                    operation: ['navigate', 'takeScreenshot', 'getText', 'clickElement', 'fillForm'],
+                    operation: ['navigate', 'takeScreenshot', 'getText', 'clickElement', 'fillForm', 'runPlaywrightScript'],
                 },
             },
             required: true,
         },
-				{
+        {
+            displayName: 'Playwright Script',
+            name: 'script',
+            type: 'string',
+            typeOptions: {
+                rows: 8,
+                alwaysOpenEditWindow: true,
+            },
+            default: '',
+            description: 'Paste your custom Playwright script here. The `page` object is available.',
+            displayOptions: {
+                show: {
+                    operation: ['runPlaywrightScript'],
+                },
+            },
+            required: true,
+        },
+        {
     displayName: 'Property Name',
     name: 'dataPropertyName',
     type: 'string',

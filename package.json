@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-playwright",
+  "name": "n8n-nodes-playwright-scripts",
   "version": "0.2.16",
   "description": "n8n-community-node-package for browser automation using Playwright",
   "keywords": [

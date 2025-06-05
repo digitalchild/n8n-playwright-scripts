@@ -55,6 +55,23 @@ export async function handleOperation(
             await page.fill(formSelector, value);
             return { success: true };
 
+        case 'runPlaywrightScript': {
+            const script = executeFunctions.getNodeParameter('script', itemIndex) as string;
+            try {
+                // The script will have access to 'page'.
+                // eslint-disable-next-line no-new-func
+                const asyncScript = new Function('page', 'itemIndex', 'executeFunctions', `return (async () => {${script}})();`);
+                await asyncScript(page, itemIndex, executeFunctions);
+                const content = await page.content();
+                const url = page.url();
+                return { success: true, content, url };
+            } catch (err: any) {
+                const content = await page.content();
+                const url = page.url();
+                return { success: false, error: err.message, content, url };
+            }
+        }
+
         default:
             throw new Error(`Unknown operation: ${operation}`);
     }
