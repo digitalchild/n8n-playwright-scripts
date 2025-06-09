@@ -1,15 +1,16 @@
 {
   "name": "n8n-nodes-playwright-scripts",
-  "version": "0.2.16",
-  "description": "n8n community node for browser automation using Playwright scripts",
+  "version": "0.1.0",
+  "description": "n8n community node for browser automation using Playwright scripts based on n8n-nodes-playwright",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "n8n-nodes-playwright-scripts"
   ],
   "license": "MIT",
   "homepage": "",
   "author": {
     "name": "Jamie Madden",
-    "email": "digitalchild@gmailc.om"
+    "email": "digitalchild@gmail.com"
   },
   "repository": {
     "type": "git",
@@ -17,13 +18,11 @@
   },
   "engines": {
     "node": ">=18.10",
-    "pnpm": ">=9.1"
+    "npm": ">=6.0"
   },
-  "packageManager": "pnpm@9.1.4",
   "main": "dist/nodes/index.js",
   "scripts": {
     "prepare": "tsc",
-    "preinstall": "npx only-allow pnpm",
     "postinstall": "npm run prepare && npm config set yes true && node dist/nodes/scripts/setup-browsers.js",
     "rebuild": "node dist/nodes/scripts/setup-browsers.js",
     "setup": "npm config set yes true && node dist/nodes/scripts/setup-browsers.js ",
@@ -33,7 +32,7 @@
     "format": "prettier nodes package.json --write",
     "lint": "eslint nodes package.json",
     "lintfix": "eslint nodes package.json --fix",
-    "prepublish": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes  package.json && npm version patch",
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes  package.json && npm version patch",
     "publish": " npm publish --access public"
   },
   "files": [

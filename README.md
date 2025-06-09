@@ -19,7 +19,7 @@ This is an n8n community node. It lets you automate browser actions using [Playw
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
 ```bash
-pnpm install n8n-nodes-playwright-scripts
+npm install n8n-nodes-playwright-scripts
 
 ```
 
@@ -28,7 +28,7 @@ Note: The package will automatically download and set up the required browser bi
 If you need to manually trigger the browser setup:
 
 ```bash
-pnpm rebuild n8n-nodes-playwright-scripts
+npm rebuild n8n-nodes-playwright-scripts
 
 ```
 
@@ -122,7 +122,7 @@ rmdir /s /q %USERPROFILE%\AppData\Local\ms-playwright
 1. Rebuild the package:
 
 ```bash
-pnpm rebuild n8n-nodes-playwright-scripts
+npm rebuild n8n-nodes-playwright-scripts
 
 ```
 

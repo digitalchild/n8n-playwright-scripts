@@ -4,7 +4,7 @@ import { execSync } from 'child_process';
 import { platform, homedir } from 'os';
 import { BrowserType } from '../playwright/config';
 
-const LOCAL_BROWSER_PATH = resolve(homedir(), '.n8n', 'nodes', 'node_modules', 'n8n-nodes-playwright', 'dist', 'nodes', 'browsers');
+const LOCAL_BROWSER_PATH = resolve(homedir(), '.n8n', 'nodes', 'node_modules', 'n8n-nodes-playwright-scripts', 'dist', 'nodes', 'browsers');
 
 function getCandidateBrowserPaths(): string[] {
 	const home = homedir();
