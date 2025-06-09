@@ -1,97 +1,134 @@
-import { mkdirSync, existsSync, readdirSync, rmSync, cpSync } from 'fs';
-import { join } from 'path';
+import { mkdirSync, existsSync, readdirSync, rmSync, cpSync, statSync } from 'fs';
+import { join, resolve } from 'path';
 import { execSync } from 'child_process';
-import { platform } from 'os';
+import { platform, homedir } from 'os';
 import { BrowserType } from '../playwright/config';
+
+const LOCAL_BROWSER_PATH = resolve(homedir(), '.n8n', 'nodes', 'node_modules', 'n8n-nodes-playwright', 'dist', 'nodes', 'browsers');
+
+function getCandidateBrowserPaths(): string[] {
+	const home = homedir();
+	const paths: string[] = [];
+
+	if (platform() === 'win32') {
+		const userprofile = process.env.USERPROFILE;
+		if (userprofile) {
+			paths.push(join(userprofile, 'AppData', 'Local', 'ms-playwright'));
+		}
+	} else if (platform() === 'darwin') {
+		paths.push(join(home, 'Library', 'Caches', 'ms-playwright'));
+	}
+	paths.push(join(home, '.cache', 'ms-playwright'));
+
+	return paths;
+}
 
 async function setupBrowsers() {
 	try {
-			// 1. First log the environment
-			console.log('Current working directory:', process.cwd());
-			console.log('Operating System:', platform());
-			console.log('Node version:', process.version);
+		console.log('Starting browser setup...\n');
 
-			// 2. Determine paths
-			const os = platform();
-			const sourcePath = os === 'win32'
-					? join(process.env.USERPROFILE || '', 'AppData', 'Local', 'ms-playwright')
-					: join(process.env.HOME || '', '.cache', 'ms-playwright');
+		// 1. Environment info
+		console.log('Current working directory:', process.cwd());
+		console.log('Operating System:', platform());
+		console.log('Node version:', process.version);
 
-			const browsersPath = join(__dirname, '..', 'browsers');
-
-			console.log('\nPaths:');
-			console.log('Source path:', sourcePath);
-			console.log('Destination path:', browsersPath);
-
-			// 3. Check if source exists
-			if (!existsSync(sourcePath)) {
-					console.log('\nInstalling Playwright browsers...');
-					execSync('npx --yes playwright install', { stdio: 'inherit' });
+		// 2. Locate source cache path
+		let sourcePath: string | undefined;
+		for (const candidate of getCandidateBrowserPaths()) {
+			if (existsSync(candidate)) {
+				sourcePath = candidate;
+				break;
 			}
+		}
 
-			// 4. Clean destination if it exists
-			if (existsSync(browsersPath)) {
-					console.log('\nCleaning existing browsers directory...');
-					rmSync(browsersPath, { recursive: true, force: true });
+		if (!sourcePath) {
+			console.log('\nNo existing browser cache found. Installing all Playwright browsers...');
+			execSync('npx --yes playwright install', { stdio: 'inherit' });
+
+			// retry detection
+			for (const candidate of getCandidateBrowserPaths()) {
+				if (existsSync(candidate)) {
+					sourcePath = candidate;
+					break;
+				}
 			}
+		}
 
-			// 5. Create fresh browsers directory
-			console.log('Creating browsers directory...');
-			mkdirSync(browsersPath, { recursive: true });
+		if (!sourcePath) {
+			throw new Error('Could not find browser cache after install.');
+		}
 
-			// 6. Copy browser files with detailed logging
-			console.log('\nCopying browser files...');
-			const files = readdirSync(sourcePath);
+		console.log('\nPaths:');
+		console.log('Source path:', sourcePath);
+		console.log('Destination path:', LOCAL_BROWSER_PATH);
 
-			for (const file of files) {
-					// Only copy browser directories we need
-					if (file.startsWith('chromium-') ||
-							file.startsWith('firefox-') ||
-							file.startsWith('webkit')) {
+		// 3. Clean destination
+		if (existsSync(LOCAL_BROWSER_PATH)) {
+			console.log('\nCleaning existing browsers directory...');
+			rmSync(LOCAL_BROWSER_PATH, { recursive: true, force: true });
+		}
 
-							const sourceFull = join(sourcePath, file);
-							const destFull = join(browsersPath, file);
+		// 4. Create destination
+		console.log('Creating browsers directory...');
+		mkdirSync(LOCAL_BROWSER_PATH, { recursive: true });
 
-							console.log(`Copying ${file}...`);
-							cpSync(sourceFull, destFull, { recursive: true });
-					}
+		// 5. Copy browser folders
+		console.log('\nCopying browser files...');
+		const files = readdirSync(sourcePath);
+		for (const file of files) {
+			if (/^(chromium-|firefox-|webkit)/.test(file)) {
+				const sourceFull = join(sourcePath, file);
+				const destFull = join(LOCAL_BROWSER_PATH, file);
+
+				if (statSync(sourceFull).isDirectory()) {
+					console.log(`Copying ${file}...`);
+					cpSync(sourceFull, destFull, { recursive: true });
+				}
 			}
+		}
 
-			// 7. Verify installation
-			console.log('\nVerifying installation...');
-			const installedFiles = readdirSync(browsersPath);
-			console.log('Installed browsers:', installedFiles);
+		// 6. Verify installation
+		console.log('\nVerifying installation...');
+		const installedFiles = readdirSync(LOCAL_BROWSER_PATH);
+		console.log('Installed browsers:', installedFiles);
 
-			// 8. Verify each browser executable
-			const browsers: BrowserType[] = ['chromium', 'firefox', 'webkit'];
-			for (const browserType of browsers) {
-					const browserDir = installedFiles.find(f => f.startsWith(browserType));
+		const expectedBrowsers: BrowserType[] = ['chromium', 'firefox', 'webkit'];
 
-					if (!browserDir) {
-							console.log(`\nInstalling ${browserType}...`);
-							await installBrowser(browserType);
-					}
+		for (const browserType of expectedBrowsers) {
+			const match = installedFiles.find(f => f.startsWith(browserType));
+			if (!match) {
+				console.log(`\nMissing ${browserType}. Installing...`);
+				await installBrowser(browserType);
 			}
+		}
 
-			console.log('\nBrowser setup completed successfully!');
+		console.log('\n✅ Browser setup completed successfully!');
 	} catch (error) {
-			console.error('\nError during browser setup:', error);
-			process.exit(1);
+		console.error('\n❌ Error during browser setup:', error);
+		process.exit(1);
 	}
 }
 
 export async function installBrowser(browserType: BrowserType) {
-    try {
-        console.log(`Installing ${browserType}...`);
-        execSync(`PLAYWRIGHT_BROWSERS_PATH=~/.n8n/nodes/node_modules/n8n-nodes-playwright/dist/nodes/browsers npx --yes playwright install ${browserType}`, { stdio: 'inherit' });
-    } catch (error) {
-        console.error(`Failed to install ${browserType}:`, error);
-    }
+	try {
+		console.log(`Installing ${browserType}...`);
+
+		execSync(`npx --yes playwright install ${browserType}`, {
+			env: {
+				...process.env,
+				PLAYWRIGHT_BROWSERS_PATH: LOCAL_BROWSER_PATH,
+			},
+			stdio: 'inherit',
+		});
+	} catch (error) {
+		console.error(`Failed to install ${browserType}:`, error);
+	}
 }
 
-// Run the setup
-console.log('Starting browser setup...\n');
-setupBrowsers().catch(error => {
-    console.error('Unhandled error:', error);
-    process.exit(1);
-});
+// Only run setup if executed directly
+if (require.main === module) {
+	setupBrowsers().catch(error => {
+		console.error('Unhandled error:', error);
+		process.exit(1);
+	});
+}
