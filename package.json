@@ -1,19 +1,19 @@
 {
   "name": "n8n-nodes-playwright-scripts",
   "version": "0.2.16",
-  "description": "n8n-community-node-package for browser automation using Playwright",
+  "description": "n8n community node for browser automation using Playwright scripts",
   "keywords": [
     "n8n-community-node-package"
   ],
   "license": "MIT",
   "homepage": "",
   "author": {
-    "name": "Mohamed Toema",
-    "email": "m.toema20@gmail.com"
+    "name": "Jamie Madden",
+    "email": "digitalchild@gmailc.om"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/toema/n8n-playwright"
+    "url": "https://github.com/digitalchild/n8n-playwright-scripts"
   },
   "engines": {
     "node": ">=18.10",
@@ -22,8 +22,9 @@
   "packageManager": "pnpm@9.1.4",
   "main": "dist/nodes/index.js",
   "scripts": {
+    "prepare": "tsc",
     "preinstall": "npx only-allow pnpm",
-    "postinstall": "npm config set yes true && node dist/nodes/scripts/setup-browsers.js",
+    "postinstall": "npm run prepare && npm config set yes true && node dist/nodes/scripts/setup-browsers.js",
     "rebuild": "node dist/nodes/scripts/setup-browsers.js",
     "setup": "npm config set yes true && node dist/nodes/scripts/setup-browsers.js ",
     "test:setup": "ts-node scripts/test-setup.ts",
