@@ -19,3 +19,4 @@ tsconfig.json
 
 # Don't ignore these files
 !dist/
+dist/nodes/browsers/
