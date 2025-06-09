@@ -32,7 +32,7 @@
     "format": "prettier nodes package.json --write",
     "lint": "eslint nodes package.json",
     "lintfix": "eslint nodes package.json --fix",
-    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes  package.json && npm version patch",
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes package.json",
     "publish": " npm publish --access public"
   },
   "files": [
