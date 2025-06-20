@@ -99,12 +99,16 @@ This operation is ideal for advanced automation, custom flows, or when you need 
 
 ### Version history
 
-### 0.2.16
+### 0.1.0
 
 - Initial release
 - Basic browser automation operations
 - Support for Chromium, Firefox, and WebKit.
 - Screenshot and form interaction capabilities
+
+### 0.1.13
+
+- Add support for running Playwright scripts
 
 ### Troubleshooting
 
